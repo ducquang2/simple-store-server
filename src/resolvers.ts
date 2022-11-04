@@ -15,13 +15,16 @@ export function resolversFn(db) {
       SignIn: async (parent, args, context, info) => {
         const users = await db.getData('/users')
 
-        const exist = users.find(
-          (x) => x.username.toLowerCase() === args.username.toLowerCase()
+        const exist = users.find((x) =>
+          x.username.toLowerCase() === args.username.toLowerCase()
+            ? x.password === args.password
+            : ''
         )
         if (exist) {
+          console.log(exist)
           return exist
         } else {
-          throw Error('User not exist')
+          throw Error('username or password is invalid')
         }
       },
       SignUp: async (parent, args, context, info) => {
