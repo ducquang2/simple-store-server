@@ -40,6 +40,19 @@ export function resolversFn(db) {
           throw Error('User exist')
         }
       },
+      SearchProduct: async (parent, args, context, info) => {
+        const products = await db.getData('/products')
+
+        const exist = products.find(
+          (x) => x.name.toLowerCase() === args.name.toLowerCase()
+        )
+        if (exist) {
+          console.log([exist])
+          return [exist]
+        } else {
+          return []
+        }
+      },
     },
   }
 }

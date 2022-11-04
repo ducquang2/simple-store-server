@@ -20,6 +20,7 @@ const typeDefs = `#graphql
   type Mutation {
     SignIn(username: String!, password: String!): User
     SignUp(username: String!, password: String!): User
+    SearchProduct(name: String!): [Product]
   }
 `
 
