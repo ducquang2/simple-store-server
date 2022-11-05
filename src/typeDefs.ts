@@ -12,15 +12,24 @@ const typeDefs = `#graphql
     price: Int
   }
 
-  type Query {
-    users: [User]
-    products: [Product]
+  type Cart {
+    username: String!
+    itemID: ID
+    itemCount: Int
   }
 
+  type Query {
+    users: [User]
+    GetAllProducts: [Product]
+    GetCart(username: String!): [Cart]
+    GetProductWithID(id: ID!): Product
+  }
+  
   type Mutation {
     SignIn(username: String!, password: String!): User
     SignUp(username: String!, password: String!): User
-    SearchProduct(name: String!): [Product]
+    SearchProductName(name: String!): [Product]
+    AddToCart(username: String!, itemID: ID!, itemCount: Int!): [Cart]
   }
 `
 

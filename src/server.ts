@@ -14,6 +14,9 @@ async function main() {
   const productsTable = await db.exists('/products')
   if (!productsTable) await db.push('/products', [])
 
+  const cartTable = await db.exists('/carts')
+  if (!cartTable) await db.push('/carts', [])
+
   const server = new ApolloServer({
     typeDefs,
     resolvers: resolversFn(db),
