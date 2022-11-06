@@ -86,9 +86,54 @@ export function resolversFn(db) {
         if (exist) {
           return Error('Cart exist')
         } else {
-          console.log(exist)
           await db.push('/carts', [...carts, { ...args }])
           return [args]
+        }
+      },
+      UpdateItemCountFromCart: async (parent, args, context, info) => {
+        const carts = await db.getData('/carts')
+
+        const exist = carts.find((x) =>
+          x.username.toLowerCase() === args.username.toLowerCase()
+            ? x.itemID === args.itemID
+            : ''
+        )
+
+        // exist.itemCount = args.itemCount
+
+        if (exist) {
+          // console.log(args.itemID)
+          carts.find((x) =>
+            x.username.toLowerCase() === args.username.toLowerCase()
+              ? x.itemID === args.itemID
+                ? (x.itemCount = args.itemCount)
+                : ''
+              : ''
+          )
+          // console.log(carts)
+          await db.push('/carts', carts)
+          return exist
+        } else {
+          return null
+        }
+      },
+      RemoveFromCart: async (parent, args, context, info) => {
+        const carts = await db.getData('/carts')
+
+        const olddata = carts.find((x) =>
+          x.username.toLowerCase() === args.username.toLowerCase()
+            ? x.itemID === args.itemID
+            : ''
+        )
+
+        const exist = carts.filter((x) => x !== olddata)
+
+        if (exist) {
+          console.log(exist)
+          await db.push('/carts', exist)
+          return olddata
+        } else {
+          return null
         }
       },
     },

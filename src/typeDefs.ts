@@ -30,6 +30,8 @@ const typeDefs = `#graphql
     SignUp(username: String!, password: String!): User
     SearchProductName(name: String!): [Product]
     AddToCart(username: String!, itemID: ID!, itemCount: Int!): [Cart]
+    UpdateItemCountFromCart(username: String!, itemID: ID!, itemCount: Int!): Cart
+    RemoveFromCart(username: String!, itemID: ID!): Cart
   }
 `
 
