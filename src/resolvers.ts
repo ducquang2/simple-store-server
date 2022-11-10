@@ -1,11 +1,17 @@
 // @ts-nocheck
 import { v4 } from 'uuid'
+import jwt from 'jsonwebtoken'
+import { User } from './types'
 
 export function resolversFn(db) {
   return {
     Query: {
-      users: async () => {
-        return db.getData('/users')
+      GetProfile: async (parent, args, context, info) => {
+        console.log(context)
+
+        if (!context.user) throw Error('UnAuthorization')
+
+        return context.user
       },
       GetAllProducts: async () => {
         return db.getData('/products')
@@ -34,10 +40,23 @@ export function resolversFn(db) {
           return null
         }
       },
+      GetUserInfo: async (parent, args, context, info) => {
+        const users = await db.getData('/users')
+
+        const exist = users.find(
+          (x) => x.username.toLowerCase() === args.username.toLowerCase()
+        )
+
+        if (exist) {
+          return exist
+        } else {
+          return null
+        }
+      },
     },
     Mutation: {
       SignIn: async (parent, args, context, info) => {
-        const users = await db.getData('/users')
+        const users: Array<User> = await db.getData('/users')
 
         const exist = users.find((x) =>
           x.username.toLowerCase() === args.username.toLowerCase()
@@ -45,7 +64,11 @@ export function resolversFn(db) {
             : ''
         )
         if (exist) {
-          return exist
+          const token = jwt.sign({ userid: exist.id }, 'key')
+          return {
+            token,
+            user: exist,
+          }
         } else {
           throw Error('username or password is invalid')
         }
@@ -57,7 +80,10 @@ export function resolversFn(db) {
           (x) => x.username.toLowerCase() === args.username.toLowerCase()
         )
         if (!exist) {
-          await db.push('/users', [...users, { ...args, id: v4() }])
+          await db.push('/users', [
+            ...users,
+            { ...args, id: v4(), isadmin: false },
+          ])
           return args
         } else {
           throw Error('User exist')
@@ -99,10 +125,7 @@ export function resolversFn(db) {
             : ''
         )
 
-        // exist.itemCount = args.itemCount
-
         if (exist) {
-          // console.log(args.itemID)
           carts.find((x) =>
             x.username.toLowerCase() === args.username.toLowerCase()
               ? x.itemID === args.itemID
@@ -110,7 +133,6 @@ export function resolversFn(db) {
                 : ''
               : ''
           )
-          // console.log(carts)
           await db.push('/carts', carts)
           return exist
         } else {
@@ -134,6 +156,39 @@ export function resolversFn(db) {
           return olddata
         } else {
           return null
+        }
+      },
+      AddAdmin: async (parent, args, context, info) => {
+        const users = await db.getData('/users')
+
+        const exist = users.find(
+          (x) => x.username.toLowerCase() === args.username.toLowerCase()
+        )
+
+        if (exist) {
+          users.find((x) =>
+            x.username.toLowerCase() === args.username.toLowerCase()
+              ? (x.isadmin = true)
+              : ''
+          )
+          await db.push('/users', users)
+          return exist
+        } else {
+          throw Error('User not exists')
+        }
+      },
+      AddProductItem: async (parent, args, context, info) => {
+        const products = await db.getData('/products')
+
+        const exist = products.find(
+          (x) => x.name.toLowerCase() === args.name.toLowerCase()
+        )
+
+        if (!exist) {
+          await db.push('/products', [...products, { ...args, id: v4() }])
+          return args
+        } else {
+          throw Error('Item exist')
         }
       },
     },
